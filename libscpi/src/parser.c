@@ -53,7 +53,7 @@
  * @param len - length of data to be written
  * @return number of bytes written
  */
-static size_t writeData(scpi_t * context, const char * data, size_t len) {
+static size_t writeData(scpi_t* context, const char* data, size_t len) {
     if ((len > 0) && (data != NULL)) {
         return context->interface->write(context, data, len);
     } else {
@@ -66,7 +66,7 @@ static size_t writeData(scpi_t * context, const char * data, size_t len) {
  * @param context
  * @return
  */
-static int flushData(scpi_t * context) {
+static int flushData(scpi_t* context) {
     if (context && context->interface && context->interface->flush) {
         return context->interface->flush(context);
     } else {
@@ -79,7 +79,7 @@ static int flushData(scpi_t * context) {
  * @param context
  * @return number of bytes written
  */
-static size_t writeDelimiter(scpi_t * context) {
+static size_t writeDelimiter(scpi_t* context) {
     if (context->output_count > 0) {
         return writeData(context, ",", 1);
     } else {
@@ -92,7 +92,7 @@ static size_t writeDelimiter(scpi_t * context) {
  * @param context
  * @return number of characters written
  */
-static size_t writeNewLine(scpi_t * context) {
+static size_t writeNewLine(scpi_t* context) {
     if (!context->first_output) {
         size_t len;
 #ifndef SCPI_LINE_ENDING
@@ -111,7 +111,7 @@ static size_t writeNewLine(scpi_t * context) {
  * @param context
  * @return number of characters written
  */
-static size_t writeSemicolon(scpi_t * context) {
+static size_t writeSemicolon(scpi_t* context) {
     if (context->output_count > 0) {
         return writeData(context, ";", 1);
     } else {
@@ -123,20 +123,20 @@ static size_t writeSemicolon(scpi_t * context) {
  * Process command
  * @param context
  */
-static scpi_bool_t processCommand(scpi_t * context) {
-    const scpi_command_t * cmd = context->param_list.cmd;
-    lex_state_t * state = &context->param_list.lex_state;
-    scpi_bool_t result = TRUE;
-    scpi_bool_t is_query = context->param_list.cmd_raw.data[context->param_list.cmd_raw.length - 1] == '?';
+static scpi_bool_t processCommand(scpi_t* context) {
+    const scpi_command_t* cmd      = context->param_list.cmd;
+    lex_state_t*          state    = &context->param_list.lex_state;
+    scpi_bool_t           result   = TRUE;
+    scpi_bool_t           is_query = context->param_list.cmd_raw.data[context->param_list.cmd_raw.length - 1] == '?';
 
     /* conditionally write ; */
-    if(!context->first_output && is_query) {
+    if (!context->first_output && is_query) {
         writeData(context, ";", 1);
     }
 
-    context->cmd_error = FALSE;
-    context->output_count = 0;
-    context->input_count = 0;
+    context->cmd_error           = FALSE;
+    context->output_count        = 0;
+    context->input_count         = 0;
     context->arbitrary_remaining = 0;
 
     /* if callback exists - call command callback */
@@ -150,7 +150,7 @@ static scpi_bool_t processCommand(scpi_t * context) {
             if (context->cmd_error) {
                 result = FALSE;
             } else {
-                if(context->first_output && is_query) {
+                if (context->first_output && is_query) {
                     context->first_output = FALSE;
                 }
             }
@@ -171,9 +171,9 @@ static scpi_bool_t processCommand(scpi_t * context) {
  * @param context
  * @result TRUE if context->paramlist is filled with correct values
  */
-static scpi_bool_t findCommandHeader(scpi_t * context, const char * header, int len) {
-    int32_t i;
-    const scpi_command_t * cmd;
+static scpi_bool_t findCommandHeader(scpi_t* context, const char* header, int len) {
+    int32_t               i;
+    const scpi_command_t* cmd;
 
     for (i = 0; context->cmdlist[i].pattern != NULL; i++) {
         cmd = &context->cmdlist[i];
@@ -192,17 +192,17 @@ static scpi_bool_t findCommandHeader(scpi_t * context, const char * header, int 
  * @param len - command line length
  * @return FALSE if there was some error during evaluation of commands
  */
-scpi_bool_t SCPI_Parse(scpi_t * context, char * data, int len) {
-    scpi_bool_t result = TRUE;
-    scpi_parser_state_t * state;
-    int r;
-    scpi_token_t cmd_prev = {SCPI_TOKEN_UNKNOWN, NULL, 0};
+scpi_bool_t SCPI_Parse(scpi_t* context, char* data, int len) {
+    scpi_bool_t          result = TRUE;
+    scpi_parser_state_t* state;
+    int                  r;
+    scpi_token_t         cmd_prev = {SCPI_TOKEN_UNKNOWN, NULL, 0};
 
     if (context == NULL) {
         return FALSE;
     }
 
-    state = &context->parser_state;
+    state                 = &context->parser_state;
     context->output_count = 0;
     context->first_output = TRUE;
 
@@ -219,11 +219,11 @@ scpi_bool_t SCPI_Parse(scpi_t * context, char * data, int len) {
             if (findCommandHeader(context, state->programHeader.ptr, state->programHeader.len)) {
 
                 context->param_list.lex_state.buffer = state->programData.ptr;
-                context->param_list.lex_state.pos = context->param_list.lex_state.buffer;
-                context->param_list.lex_state.len = state->programData.len;
-                context->param_list.cmd_raw.data = state->programHeader.ptr;
+                context->param_list.lex_state.pos    = context->param_list.lex_state.buffer;
+                context->param_list.lex_state.len    = state->programData.len;
+                context->param_list.cmd_raw.data     = state->programHeader.ptr;
                 context->param_list.cmd_raw.position = 0;
-                context->param_list.cmd_raw.length = state->programHeader.len;
+                context->param_list.cmd_raw.length   = state->programHeader.len;
 
                 result &= processCommand(context);
                 cmd_prev = state->programHeader;
@@ -231,7 +231,8 @@ scpi_bool_t SCPI_Parse(scpi_t * context, char * data, int len) {
                 /* place undefined header with error */
                 /* calculate length of errorenous header and trim \r\n */
                 size_t r2 = r;
-                while (r2 > 0 && (data[r2 - 1] == '\r' || data[r2 - 1] == '\n')) r2--;
+                while (r2 > 0 && (data[r2 - 1] == '\r' || data[r2 - 1] == '\n'))
+                    r2--;
                 SCPI_ErrorPushEx(context, SCPI_ERROR_UNDEFINED_HEADER, data, r2);
                 result = FALSE;
             }
@@ -243,7 +244,6 @@ scpi_bool_t SCPI_Parse(scpi_t * context, char * data, int len) {
         } else {
             break;
         }
-
     }
 
     /* conditionally write new line */
@@ -267,23 +267,28 @@ scpi_bool_t SCPI_Parse(scpi_t * context, char * data, int len) {
  * @param error_queue_data
  * @param error_queue_size
  */
-void SCPI_Init(scpi_t * context,
-        const scpi_command_t * commands,
-        scpi_interface_t * interface,
-        const scpi_unit_def_t * units,
-        const char * idn1, const char * idn2, const char * idn3, const char * idn4,
-        char * input_buffer, size_t input_buffer_length,
-        scpi_error_t * error_queue_data, int16_t error_queue_size) {
-    memset(context, 0, sizeof (*context));
-    context->cmdlist = commands;
-    context->interface = interface;
-    context->units = units;
-    context->idn[0] = idn1;
-    context->idn[1] = idn2;
-    context->idn[2] = idn3;
-    context->idn[3] = idn4;
-    context->buffer.data = input_buffer;
-    context->buffer.length = input_buffer_length;
+void SCPI_Init(scpi_t*     context,
+    const scpi_command_t*  commands,
+    scpi_interface_t*      interface,
+    const scpi_unit_def_t* units,
+    const char*            idn1,
+    const char*            idn2,
+    const char*            idn3,
+    const char*            idn4,
+    char*                  input_buffer,
+    size_t                 input_buffer_length,
+    scpi_error_t*          error_queue_data,
+    int16_t                error_queue_size) {
+    memset(context, 0, sizeof(*context));
+    context->cmdlist         = commands;
+    context->interface       = interface;
+    context->units           = units;
+    context->idn[0]          = idn1;
+    context->idn[1]          = idn2;
+    context->idn[2]          = idn3;
+    context->idn[3]          = idn4;
+    context->buffer.data     = input_buffer;
+    context->buffer.length   = input_buffer_length;
     context->buffer.position = 0;
     SCPI_ErrorInit(context, error_queue_data, error_queue_size);
 }
@@ -297,8 +302,7 @@ void SCPI_Init(scpi_t * context,
  * @param len
  * @return
  */
-void SCPI_InitHeap(scpi_t * context,
-        char * error_info_heap, size_t error_info_heap_length) {
+void SCPI_InitHeap(scpi_t* context, char* error_info_heap, size_t error_info_heap_length) {
     scpiheap_init(&context->error_info_heap, error_info_heap, error_info_heap_length);
 }
 #endif
@@ -313,14 +317,14 @@ void SCPI_InitHeap(scpi_t * context,
  * @param len - length of data
  * @return
  */
-scpi_bool_t SCPI_Input(scpi_t * context, const char * data, int len) {
-    scpi_bool_t result = TRUE;
-    size_t totcmdlen = 0;
-    int cmdlen = 0;
+scpi_bool_t SCPI_Input(scpi_t* context, const char* data, int len) {
+    scpi_bool_t result    = TRUE;
+    size_t      totcmdlen = 0;
+    int         cmdlen    = 0;
 
     if (len == 0) {
         context->buffer.data[context->buffer.position] = 0;
-        result = SCPI_Parse(context, context->buffer.data, context->buffer.position);
+        result                   = SCPI_Parse(context, context->buffer.data, context->buffer.position);
         context->buffer.position = 0;
     } else {
         int buffer_free;
@@ -328,7 +332,7 @@ scpi_bool_t SCPI_Input(scpi_t * context, const char * data, int len) {
         buffer_free = context->buffer.length - context->buffer.position;
         if (len > (buffer_free - 1)) {
             /* Input buffer overrun - invalidate buffer */
-            context->buffer.position = 0;
+            context->buffer.position                       = 0;
             context->buffer.data[context->buffer.position] = 0;
             SCPI_ErrorPush(context, SCPI_ERROR_INPUT_BUFFER_OVERRUN);
             return FALSE;
@@ -337,9 +341,9 @@ scpi_bool_t SCPI_Input(scpi_t * context, const char * data, int len) {
         context->buffer.position += len;
         context->buffer.data[context->buffer.position] = 0;
 
-
         while (1) {
-            cmdlen = scpiParser_detectProgramMessageUnit(&context->parser_state, context->buffer.data + totcmdlen, context->buffer.position - totcmdlen);
+            cmdlen = scpiParser_detectProgramMessageUnit(
+                &context->parser_state, context->buffer.data + totcmdlen, context->buffer.position - totcmdlen);
             totcmdlen += cmdlen;
 
             if (context->parser_state.termination == SCPI_MESSAGE_TERMINATION_NL) {
@@ -348,9 +352,11 @@ scpi_bool_t SCPI_Input(scpi_t * context, const char * data, int len) {
                 context->buffer.position -= totcmdlen;
                 totcmdlen = 0;
             } else {
-                if (context->parser_state.programHeader.type == SCPI_TOKEN_UNKNOWN
-                        && context->parser_state.termination == SCPI_MESSAGE_TERMINATION_NONE) break;
-                if (totcmdlen >= context->buffer.position) break;
+                if (context->parser_state.programHeader.type == SCPI_TOKEN_UNKNOWN &&
+                    context->parser_state.termination == SCPI_MESSAGE_TERMINATION_NONE)
+                    break;
+                if (totcmdlen >= context->buffer.position)
+                    break;
             }
         }
     }
@@ -366,7 +372,7 @@ scpi_bool_t SCPI_Input(scpi_t * context, const char * data, int len) {
  * @param data
  * @return
  */
-size_t SCPI_ResultCharacters(scpi_t * context, const char * data, size_t len) {
+size_t SCPI_ResultCharacters(scpi_t* context, const char* data, size_t len) {
     size_t result = 0;
     result += writeDelimiter(context);
     result += writeData(context, data, len);
@@ -379,12 +385,16 @@ size_t SCPI_ResultCharacters(scpi_t * context, const char * data, size_t len) {
  * @param base
  * @return
  */
-static const char * getBasePrefix(int8_t base) {
+static const char* getBasePrefix(int8_t base) {
     switch (base) {
-        case 2: return "#B";
-        case 8: return "#Q";
-        case 16: return "#H";
-        default: return NULL;
+        case 2:
+            return "#B";
+        case 8:
+            return "#Q";
+        case 16:
+            return "#H";
+        default:
+            return NULL;
     }
 }
 
@@ -396,13 +406,13 @@ static const char * getBasePrefix(int8_t base) {
  * @param sign
  * @return
  */
-static size_t resultUInt32BaseSign(scpi_t * context, uint32_t val, int8_t base, scpi_bool_t sign) {
-    char buffer[32 + 1];
-    const char * basePrefix;
-    size_t result = 0;
-    size_t len;
+static size_t resultUInt32BaseSign(scpi_t* context, uint32_t val, int8_t base, scpi_bool_t sign) {
+    char        buffer[32 + 1];
+    const char* basePrefix;
+    size_t      result = 0;
+    size_t      len;
 
-    len = UInt32ToStrBaseSign(val, buffer, sizeof (buffer), base, sign);
+    len        = UInt32ToStrBaseSign(val, buffer, sizeof(buffer), base, sign);
     basePrefix = getBasePrefix(base);
 
     result += writeDelimiter(context);
@@ -422,13 +432,13 @@ static size_t resultUInt32BaseSign(scpi_t * context, uint32_t val, int8_t base, 
  * @param sign
  * @return
  */
-static size_t resultUInt64BaseSign(scpi_t * context, uint64_t val, int8_t base, scpi_bool_t sign) {
-    char buffer[64 + 1];
-    const char * basePrefix;
-    size_t result = 0;
-    size_t len;
+static size_t resultUInt64BaseSign(scpi_t* context, uint64_t val, int8_t base, scpi_bool_t sign) {
+    char        buffer[64 + 1];
+    const char* basePrefix;
+    size_t      result = 0;
+    size_t      len;
 
-    len = UInt64ToStrBaseSign(val, buffer, sizeof (buffer), base, sign);
+    len        = UInt64ToStrBaseSign(val, buffer, sizeof(buffer), base, sign);
     basePrefix = getBasePrefix(base);
 
     result += writeDelimiter(context);
@@ -446,9 +456,7 @@ static size_t resultUInt64BaseSign(scpi_t * context, uint64_t val, int8_t base, 
  * @param val
  * @return
  */
-size_t SCPI_ResultInt32(scpi_t * context, int32_t val) {
-    return resultUInt32BaseSign(context, val, 10, TRUE);
-}
+size_t SCPI_ResultInt32(scpi_t* context, int32_t val) { return resultUInt32BaseSign(context, val, 10, TRUE); }
 
 /**
  * Write unsigned 32 bit integer value in specific base to the result
@@ -457,7 +465,7 @@ size_t SCPI_ResultInt32(scpi_t * context, int32_t val) {
  * @param val
  * @return
  */
-size_t SCPI_ResultUInt32Base(scpi_t * context, uint32_t val, int8_t base) {
+size_t SCPI_ResultUInt32Base(scpi_t* context, uint32_t val, int8_t base) {
     return resultUInt32BaseSign(context, val, base, FALSE);
 }
 
@@ -467,9 +475,7 @@ size_t SCPI_ResultUInt32Base(scpi_t * context, uint32_t val, int8_t base) {
  * @param val
  * @return
  */
-size_t SCPI_ResultInt64(scpi_t * context, int64_t val) {
-    return resultUInt64BaseSign(context, val, 10, TRUE);
-}
+size_t SCPI_ResultInt64(scpi_t* context, int64_t val) { return resultUInt64BaseSign(context, val, 10, TRUE); }
 
 /**
  * Write unsigned 64 bit integer value in specific base to the result
@@ -477,7 +483,7 @@ size_t SCPI_ResultInt64(scpi_t * context, int64_t val) {
  * @param val
  * @return
  */
-size_t SCPI_ResultUInt64Base(scpi_t * context, uint64_t val, int8_t base) {
+size_t SCPI_ResultUInt64Base(scpi_t* context, uint64_t val, int8_t base) {
     return resultUInt64BaseSign(context, val, base, FALSE);
 }
 
@@ -487,10 +493,10 @@ size_t SCPI_ResultUInt64Base(scpi_t * context, uint64_t val, int8_t base) {
  * @param val
  * @return
  */
-size_t SCPI_ResultFloat(scpi_t * context, float val) {
-    char buffer[32];
+size_t SCPI_ResultFloat(scpi_t* context, float val) {
+    char   buffer[32];
     size_t result = 0;
-    size_t len = SCPI_FloatToStr(val, buffer, sizeof (buffer));
+    size_t len    = SCPI_FloatToStr(val, buffer, sizeof(buffer));
     result += writeDelimiter(context);
     result += writeData(context, buffer, len);
     context->output_count++;
@@ -503,10 +509,10 @@ size_t SCPI_ResultFloat(scpi_t * context, float val) {
  * @param val
  * @return
  */
-size_t SCPI_ResultDouble(scpi_t * context, double val) {
-    char buffer[32];
+size_t SCPI_ResultDouble(scpi_t* context, double val) {
+    char   buffer[32];
     size_t result = 0;
-    size_t len = SCPI_DoubleToStr(val, buffer, sizeof (buffer));
+    size_t len    = SCPI_DoubleToStr(val, buffer, sizeof(buffer));
     result += writeDelimiter(context);
     result += writeData(context, buffer, len);
     context->output_count++;
@@ -519,10 +525,10 @@ size_t SCPI_ResultDouble(scpi_t * context, double val) {
  * @param data
  * @return
  */
-size_t SCPI_ResultText(scpi_t * context, const char * data) {
-    size_t result = 0;
-    size_t len = strlen(data);
-    const char * quote;
+size_t SCPI_ResultText(scpi_t* context, const char* data) {
+    size_t      result = 0;
+    size_t      len    = strlen(data);
+    const char* quote;
     result += writeDelimiter(context);
     result += writeData(context, "\"", 1);
     while ((quote = strnpbrk(data, len, "\""))) {
@@ -548,18 +554,18 @@ size_t SCPI_ResultText(scpi_t * context, const char * data) {
  * @param error
  * @return
  */
-size_t SCPI_ResultError(scpi_t * context, scpi_error_t * error) {
-    size_t result = 0;
-    size_t outputlimit = SCPI_STD_ERROR_DESC_MAX_STRING_LENGTH;
-    size_t step = 0;
-    const char * quote;
+size_t SCPI_ResultError(scpi_t* context, scpi_error_t* error) {
+    size_t      result      = 0;
+    size_t      outputlimit = SCPI_STD_ERROR_DESC_MAX_STRING_LENGTH;
+    size_t      step        = 0;
+    const char* quote;
 
-    const char * data[SCPIDEFINE_DESCRIPTION_MAX_PARTS];
-    size_t len[SCPIDEFINE_DESCRIPTION_MAX_PARTS];
-    size_t i;
+    const char* data[SCPIDEFINE_DESCRIPTION_MAX_PARTS];
+    size_t      len[SCPIDEFINE_DESCRIPTION_MAX_PARTS];
+    size_t      i;
 
     data[0] = SCPI_ErrorTranslate(error->error_code);
-    len[0] = strlen(data[0]);
+    len[0]  = strlen(data[0]);
 
 #if USE_DEVICE_DEPENDENT_ERROR_INFORMATION
     data[1] = error->device_dependent_info;
@@ -613,18 +619,18 @@ size_t SCPI_ResultError(scpi_t * context, scpi_error_t * error) {
  * @param len
  * @return
  */
-size_t SCPI_ResultArbitraryBlockHeader(scpi_t * context, size_t len) {
+size_t SCPI_ResultArbitraryBlockHeader(scpi_t* context, size_t len) {
     size_t result = 0;
-    char block_header[12];
+    char   block_header[12];
     size_t header_len;
     block_header[0] = '#';
-    SCPI_UInt32ToStrBase((uint32_t) len, block_header + 2, 10, 10);
+    SCPI_UInt32ToStrBase((uint32_t)len, block_header + 2, 10, 10);
 
-    header_len = strlen(block_header + 2);
-    block_header[1] = (char) (header_len + '0');
+    header_len      = strlen(block_header + 2);
+    block_header[1] = (char)(header_len + '0');
 
     context->arbitrary_remaining = len;
-    result  = writeDelimiter(context);
+    result                       = writeDelimiter(context);
     result += writeData(context, block_header, header_len + 2);
     return result;
 }
@@ -636,7 +642,7 @@ size_t SCPI_ResultArbitraryBlockHeader(scpi_t * context, size_t len) {
  * @param len
  * @return
  */
-size_t SCPI_ResultArbitraryBlockData(scpi_t * context, const void * data, size_t len) {
+size_t SCPI_ResultArbitraryBlockData(scpi_t* context, const void* data, size_t len) {
 
     if (context->arbitrary_remaining < len) {
         SCPI_ErrorPush(context, SCPI_ERROR_SYSTEM_ERROR);
@@ -649,7 +655,7 @@ size_t SCPI_ResultArbitraryBlockData(scpi_t * context, const void * data, size_t
         context->output_count++;
     }
 
-    return writeData(context, (const char *) data, len);
+    return writeData(context, (const char*)data, len);
 }
 
 /**
@@ -659,7 +665,7 @@ size_t SCPI_ResultArbitraryBlockData(scpi_t * context, const void * data, size_t
  * @param len
  * @return
  */
-size_t SCPI_ResultArbitraryBlock(scpi_t * context, const void * data, size_t len) {
+size_t SCPI_ResultArbitraryBlock(scpi_t* context, const void* data, size_t len) {
     size_t result = 0;
     result += SCPI_ResultArbitraryBlockHeader(context, len);
     result += SCPI_ResultArbitraryBlockData(context, data, len);
@@ -672,7 +678,7 @@ size_t SCPI_ResultArbitraryBlock(scpi_t * context, const void * data, size_t len
  * @param val
  * @return
  */
-size_t SCPI_ResultBool(scpi_t * context, scpi_bool_t val) {
+size_t SCPI_ResultBool(scpi_t* context, scpi_bool_t val) {
     return resultUInt32BaseSign(context, val ? 1 : 0, 10, FALSE);
 }
 
@@ -683,9 +689,9 @@ size_t SCPI_ResultBool(scpi_t * context, scpi_bool_t val) {
  * @param token
  * @param ptr
  */
-static void invalidateToken(scpi_token_t * token, char * ptr) {
-    token->len = 0;
-    token->ptr = ptr;
+static void invalidateToken(scpi_token_t* token, char* ptr) {
+    token->len  = 0;
+    token->ptr  = ptr;
     token->type = SCPI_TOKEN_UNKNOWN;
 }
 
@@ -696,8 +702,8 @@ static void invalidateToken(scpi_token_t * token, char * ptr) {
  * @param mandatory
  * @return
  */
-scpi_bool_t SCPI_Parameter(scpi_t * context, scpi_parameter_t * parameter, scpi_bool_t mandatory) {
-    lex_state_t * state;
+scpi_bool_t SCPI_Parameter(scpi_t* context, scpi_parameter_t* parameter, scpi_bool_t mandatory) {
+    lex_state_t* state;
 
     if (!parameter) {
         SCPI_ErrorPush(context, SCPI_ERROR_SYSTEM_ERROR);
@@ -754,7 +760,7 @@ scpi_bool_t SCPI_Parameter(scpi_t * context, scpi_parameter_t * parameter, scpi_
  * @param suffixAllowed
  * @return
  */
-scpi_bool_t SCPI_ParamIsNumber(scpi_parameter_t * parameter, scpi_bool_t suffixAllowed) {
+scpi_bool_t SCPI_ParamIsNumber(scpi_parameter_t* parameter, scpi_bool_t suffixAllowed) {
     switch (parameter->type) {
         case SCPI_TOKEN_HEXNUM:
         case SCPI_TOKEN_OCTNUM:
@@ -776,7 +782,7 @@ scpi_bool_t SCPI_ParamIsNumber(scpi_parameter_t * parameter, scpi_bool_t suffixA
  * @param sign
  * @return TRUE if succesful
  */
-static scpi_bool_t ParamSignToUInt32(scpi_t * context, scpi_parameter_t * parameter, uint32_t * value, scpi_bool_t sign) {
+static scpi_bool_t ParamSignToUInt32(scpi_t* context, scpi_parameter_t* parameter, uint32_t* value, scpi_bool_t sign) {
 
     if (!value) {
         SCPI_ErrorPush(context, SCPI_ERROR_SYSTEM_ERROR);
@@ -793,7 +799,7 @@ static scpi_bool_t ParamSignToUInt32(scpi_t * context, scpi_parameter_t * parame
         case SCPI_TOKEN_DECIMAL_NUMERIC_PROGRAM_DATA:
         case SCPI_TOKEN_DECIMAL_NUMERIC_PROGRAM_DATA_WITH_SUFFIX:
             if (sign) {
-                return strBaseToInt32(parameter->ptr, (int32_t *) value, 10) > 0 ? TRUE : FALSE;
+                return strBaseToInt32(parameter->ptr, (int32_t*)value, 10) > 0 ? TRUE : FALSE;
             } else {
                 return strBaseToUInt32(parameter->ptr, value, 10) > 0 ? TRUE : FALSE;
             }
@@ -810,7 +816,7 @@ static scpi_bool_t ParamSignToUInt32(scpi_t * context, scpi_parameter_t * parame
  * @param sign
  * @return TRUE if succesful
  */
-static scpi_bool_t ParamSignToUInt64(scpi_t * context, scpi_parameter_t * parameter, uint64_t * value, scpi_bool_t sign) {
+static scpi_bool_t ParamSignToUInt64(scpi_t* context, scpi_parameter_t* parameter, uint64_t* value, scpi_bool_t sign) {
 
     if (!value) {
         SCPI_ErrorPush(context, SCPI_ERROR_SYSTEM_ERROR);
@@ -827,7 +833,7 @@ static scpi_bool_t ParamSignToUInt64(scpi_t * context, scpi_parameter_t * parame
         case SCPI_TOKEN_DECIMAL_NUMERIC_PROGRAM_DATA:
         case SCPI_TOKEN_DECIMAL_NUMERIC_PROGRAM_DATA_WITH_SUFFIX:
             if (sign) {
-                return strBaseToInt64(parameter->ptr, (int64_t *) value, 10) > 0 ? TRUE : FALSE;
+                return strBaseToInt64(parameter->ptr, (int64_t*)value, 10) > 0 ? TRUE : FALSE;
             } else {
                 return strBaseToUInt64(parameter->ptr, value, 10) > 0 ? TRUE : FALSE;
             }
@@ -843,8 +849,8 @@ static scpi_bool_t ParamSignToUInt64(scpi_t * context, scpi_parameter_t * parame
  * @param value result
  * @return TRUE if succesful
  */
-scpi_bool_t SCPI_ParamToInt32(scpi_t * context, scpi_parameter_t * parameter, int32_t * value) {
-    return ParamSignToUInt32(context, parameter, (uint32_t *) value, TRUE);
+scpi_bool_t SCPI_ParamToInt32(scpi_t* context, scpi_parameter_t* parameter, int32_t* value) {
+    return ParamSignToUInt32(context, parameter, (uint32_t*)value, TRUE);
 }
 
 /**
@@ -854,7 +860,7 @@ scpi_bool_t SCPI_ParamToInt32(scpi_t * context, scpi_parameter_t * parameter, in
  * @param value result
  * @return TRUE if succesful
  */
-scpi_bool_t SCPI_ParamToUInt32(scpi_t * context, scpi_parameter_t * parameter, uint32_t * value) {
+scpi_bool_t SCPI_ParamToUInt32(scpi_t* context, scpi_parameter_t* parameter, uint32_t* value) {
     return ParamSignToUInt32(context, parameter, value, FALSE);
 }
 
@@ -865,8 +871,8 @@ scpi_bool_t SCPI_ParamToUInt32(scpi_t * context, scpi_parameter_t * parameter, u
  * @param value result
  * @return TRUE if succesful
  */
-scpi_bool_t SCPI_ParamToInt64(scpi_t * context, scpi_parameter_t * parameter, int64_t * value) {
-    return ParamSignToUInt64(context, parameter, (uint64_t *) value, TRUE);
+scpi_bool_t SCPI_ParamToInt64(scpi_t* context, scpi_parameter_t* parameter, int64_t* value) {
+    return ParamSignToUInt64(context, parameter, (uint64_t*)value, TRUE);
 }
 
 /**
@@ -876,7 +882,7 @@ scpi_bool_t SCPI_ParamToInt64(scpi_t * context, scpi_parameter_t * parameter, in
  * @param value result
  * @return TRUE if succesful
  */
-scpi_bool_t SCPI_ParamToUInt64(scpi_t * context, scpi_parameter_t * parameter, uint64_t * value) {
+scpi_bool_t SCPI_ParamToUInt64(scpi_t* context, scpi_parameter_t* parameter, uint64_t* value) {
     return ParamSignToUInt64(context, parameter, value, FALSE);
 }
 
@@ -887,9 +893,9 @@ scpi_bool_t SCPI_ParamToUInt64(scpi_t * context, scpi_parameter_t * parameter, u
  * @param value result
  * @return TRUE if succesful
  */
-scpi_bool_t SCPI_ParamToFloat(scpi_t * context, scpi_parameter_t * parameter, float * value) {
+scpi_bool_t SCPI_ParamToFloat(scpi_t* context, scpi_parameter_t* parameter, float* value) {
     scpi_bool_t result;
-    uint32_t valint;
+    uint32_t    valint;
 
     if (!value) {
         SCPI_ErrorPush(context, SCPI_ERROR_SYSTEM_ERROR);
@@ -920,9 +926,9 @@ scpi_bool_t SCPI_ParamToFloat(scpi_t * context, scpi_parameter_t * parameter, fl
  * @param value result
  * @return TRUE if succesful
  */
-scpi_bool_t SCPI_ParamToDouble(scpi_t * context, scpi_parameter_t * parameter, double * value) {
+scpi_bool_t SCPI_ParamToDouble(scpi_t* context, scpi_parameter_t* parameter, double* value) {
     scpi_bool_t result;
-    uint64_t valint;
+    uint64_t    valint;
 
     if (!value) {
         SCPI_ErrorPush(context, SCPI_ERROR_SYSTEM_ERROR);
@@ -953,8 +959,8 @@ scpi_bool_t SCPI_ParamToDouble(scpi_t * context, scpi_parameter_t * parameter, d
  * @param mandatory
  * @return
  */
-scpi_bool_t SCPI_ParamFloat(scpi_t * context, float * value, scpi_bool_t mandatory) {
-    scpi_bool_t result;
+scpi_bool_t SCPI_ParamFloat(scpi_t* context, float* value, scpi_bool_t mandatory) {
+    scpi_bool_t      result;
     scpi_parameter_t param;
 
     if (!value) {
@@ -984,8 +990,8 @@ scpi_bool_t SCPI_ParamFloat(scpi_t * context, float * value, scpi_bool_t mandato
  * @param mandatory
  * @return
  */
-scpi_bool_t SCPI_ParamDouble(scpi_t * context, double * value, scpi_bool_t mandatory) {
-    scpi_bool_t result;
+scpi_bool_t SCPI_ParamDouble(scpi_t* context, double* value, scpi_bool_t mandatory) {
+    scpi_bool_t      result;
     scpi_parameter_t param;
 
     if (!value) {
@@ -1016,8 +1022,8 @@ scpi_bool_t SCPI_ParamDouble(scpi_t * context, double * value, scpi_bool_t manda
  * @param sign
  * @return
  */
-static scpi_bool_t ParamSignUInt32(scpi_t * context, uint32_t * value, scpi_bool_t mandatory, scpi_bool_t sign) {
-    scpi_bool_t result;
+static scpi_bool_t ParamSignUInt32(scpi_t* context, uint32_t* value, scpi_bool_t mandatory, scpi_bool_t sign) {
+    scpi_bool_t      result;
     scpi_parameter_t param;
 
     if (!value) {
@@ -1048,8 +1054,8 @@ static scpi_bool_t ParamSignUInt32(scpi_t * context, uint32_t * value, scpi_bool
  * @param sign
  * @return
  */
-static scpi_bool_t ParamSignUInt64(scpi_t * context, uint64_t * value, scpi_bool_t mandatory, scpi_bool_t sign) {
-    scpi_bool_t result;
+static scpi_bool_t ParamSignUInt64(scpi_t* context, uint64_t* value, scpi_bool_t mandatory, scpi_bool_t sign) {
+    scpi_bool_t      result;
     scpi_parameter_t param;
 
     if (!value) {
@@ -1079,8 +1085,8 @@ static scpi_bool_t ParamSignUInt64(scpi_t * context, uint64_t * value, scpi_bool
  * @param mandatory
  * @return
  */
-scpi_bool_t SCPI_ParamInt32(scpi_t * context, int32_t * value, scpi_bool_t mandatory) {
-    return ParamSignUInt32(context, (uint32_t *) value, mandatory, TRUE);
+scpi_bool_t SCPI_ParamInt32(scpi_t* context, int32_t* value, scpi_bool_t mandatory) {
+    return ParamSignUInt32(context, (uint32_t*)value, mandatory, TRUE);
 }
 
 /**
@@ -1090,7 +1096,7 @@ scpi_bool_t SCPI_ParamInt32(scpi_t * context, int32_t * value, scpi_bool_t manda
  * @param mandatory
  * @return
  */
-scpi_bool_t SCPI_ParamUInt32(scpi_t * context, uint32_t * value, scpi_bool_t mandatory) {
+scpi_bool_t SCPI_ParamUInt32(scpi_t* context, uint32_t* value, scpi_bool_t mandatory) {
     return ParamSignUInt32(context, value, mandatory, FALSE);
 }
 
@@ -1101,8 +1107,8 @@ scpi_bool_t SCPI_ParamUInt32(scpi_t * context, uint32_t * value, scpi_bool_t man
  * @param mandatory
  * @return
  */
-scpi_bool_t SCPI_ParamInt64(scpi_t * context, int64_t * value, scpi_bool_t mandatory) {
-    return ParamSignUInt64(context, (uint64_t *) value, mandatory, TRUE);
+scpi_bool_t SCPI_ParamInt64(scpi_t* context, int64_t* value, scpi_bool_t mandatory) {
+    return ParamSignUInt64(context, (uint64_t*)value, mandatory, TRUE);
 }
 
 /**
@@ -1112,7 +1118,7 @@ scpi_bool_t SCPI_ParamInt64(scpi_t * context, int64_t * value, scpi_bool_t manda
  * @param mandatory
  * @return
  */
-scpi_bool_t SCPI_ParamUInt64(scpi_t * context, uint64_t * value, scpi_bool_t mandatory) {
+scpi_bool_t SCPI_ParamUInt64(scpi_t* context, uint64_t* value, scpi_bool_t mandatory) {
     return ParamSignUInt64(context, value, mandatory, FALSE);
 }
 
@@ -1124,8 +1130,8 @@ scpi_bool_t SCPI_ParamUInt64(scpi_t * context, uint64_t * value, scpi_bool_t man
  * @param mandatory
  * @return
  */
-scpi_bool_t SCPI_ParamCharacters(scpi_t * context, const char ** value, size_t * len, scpi_bool_t mandatory) {
-    scpi_bool_t result;
+scpi_bool_t SCPI_ParamCharacters(scpi_t* context, const char** value, size_t* len, scpi_bool_t mandatory) {
+    scpi_bool_t      result;
     scpi_parameter_t param;
 
     if (!value || !len) {
@@ -1139,15 +1145,16 @@ scpi_bool_t SCPI_ParamCharacters(scpi_t * context, const char ** value, size_t *
             case SCPI_TOKEN_SINGLE_QUOTE_PROGRAM_DATA:
             case SCPI_TOKEN_DOUBLE_QUOTE_PROGRAM_DATA:
                 *value = param.ptr + 1;
-                *len = param.len - 2;
+                *len   = param.len - 2;
                 break;
             default:
                 *value = param.ptr;
-                *len = param.len;
+                *len   = param.len;
                 break;
         }
 
-        /* TODO: return also parameter type (ProgramMnemonic, ArbitraryBlockProgramData, SingleQuoteProgramData, DoubleQuoteProgramData */
+        /* TODO: return also parameter type (ProgramMnemonic, ArbitraryBlockProgramData, SingleQuoteProgramData,
+         * DoubleQuoteProgramData */
     }
 
     return result;
@@ -1161,8 +1168,8 @@ scpi_bool_t SCPI_ParamCharacters(scpi_t * context, const char ** value, size_t *
  * @param mandatory
  * @return
  */
-scpi_bool_t SCPI_ParamArbitraryBlock(scpi_t * context, const char ** value, size_t * len, scpi_bool_t mandatory) {
-    scpi_bool_t result;
+scpi_bool_t SCPI_ParamArbitraryBlock(scpi_t* context, const char** value, size_t* len, scpi_bool_t mandatory) {
+    scpi_bool_t      result;
     scpi_parameter_t param;
 
     if (!value || !len) {
@@ -1174,7 +1181,7 @@ scpi_bool_t SCPI_ParamArbitraryBlock(scpi_t * context, const char ** value, size
     if (result) {
         if (param.type == SCPI_TOKEN_ARBITRARY_BLOCK_PROGRAM_DATA) {
             *value = param.ptr;
-            *len = param.len;
+            *len   = param.len;
         } else {
             SCPI_ErrorPush(context, SCPI_ERROR_DATA_TYPE_ERROR);
             result = FALSE;
@@ -1184,12 +1191,13 @@ scpi_bool_t SCPI_ParamArbitraryBlock(scpi_t * context, const char ** value, size
     return result;
 }
 
-scpi_bool_t SCPI_ParamCopyText(scpi_t * context, char * buffer, size_t buffer_len, size_t * copy_len, scpi_bool_t mandatory) {
-    scpi_bool_t result;
+scpi_bool_t SCPI_ParamCopyText(
+    scpi_t* context, char* buffer, size_t buffer_len, size_t* copy_len, scpi_bool_t mandatory) {
+    scpi_bool_t      result;
     scpi_parameter_t param;
-    size_t i_from;
-    size_t i_to;
-    char quote;
+    size_t           i_from;
+    size_t           i_to;
+    char             quote;
 
     if (!buffer || !copy_len) {
         SCPI_ErrorPush(context, SCPI_ERROR_SYSTEM_ERROR);
@@ -1203,7 +1211,7 @@ scpi_bool_t SCPI_ParamCopyText(scpi_t * context, char * buffer, size_t buffer_le
             case SCPI_TOKEN_SINGLE_QUOTE_PROGRAM_DATA:
             case SCPI_TOKEN_DOUBLE_QUOTE_PROGRAM_DATA:
                 quote = param.type == SCPI_TOKEN_SINGLE_QUOTE_PROGRAM_DATA ? '\'' : '"';
-                for (i_from = 1, i_to = 0; i_from < (size_t) (param.len - 1); i_from++) {
+                for (i_from = 1, i_to = 0; i_from < (size_t)(param.len - 1); i_from++) {
                     if (i_from >= buffer_len) {
                         break;
                     }
@@ -1235,8 +1243,9 @@ scpi_bool_t SCPI_ParamCopyText(scpi_t * context, char * buffer, size_t buffer_le
  * @param value - index to options
  * @return
  */
-scpi_bool_t SCPI_ParamToChoice(scpi_t * context, scpi_parameter_t * parameter, const scpi_choice_def_t * options, int32_t * value) {
-    size_t res;
+scpi_bool_t SCPI_ParamToChoice(
+    scpi_t* context, scpi_parameter_t* parameter, const scpi_choice_def_t* options, int32_t* value) {
+    size_t      res;
     scpi_bool_t result = FALSE;
 
     if (!options || !value) {
@@ -1270,7 +1279,7 @@ scpi_bool_t SCPI_ParamToChoice(scpi_t * context, scpi_parameter_t * parameter, c
  * @param text result text
  * @return TRUE if succesfule, else FALSE
  */
-scpi_bool_t SCPI_ChoiceToName(const scpi_choice_def_t * options, int32_t tag, const char ** text) {
+scpi_bool_t SCPI_ChoiceToName(const scpi_choice_def_t* options, int32_t tag, const char** text) {
     int i;
 
     for (i = 0; options[i].name != NULL; i++) {
@@ -1287,9 +1296,7 @@ scpi_bool_t SCPI_ChoiceToName(const scpi_choice_def_t * options, int32_t tag, co
  * Definition of BOOL choice list
  */
 const scpi_choice_def_t scpi_bool_def[] = {
-    {"OFF", 0},
-    {"ON", 1},
-    SCPI_CHOICE_LIST_END /* termination of option list */
+    {"OFF", 0}, {"ON", 1}, SCPI_CHOICE_LIST_END /* termination of option list */
 };
 
 /**
@@ -1299,10 +1306,10 @@ const scpi_choice_def_t scpi_bool_def[] = {
  * @param mandatory
  * @return
  */
-scpi_bool_t SCPI_ParamBool(scpi_t * context, scpi_bool_t * value, scpi_bool_t mandatory) {
-    scpi_bool_t result;
+scpi_bool_t SCPI_ParamBool(scpi_t* context, scpi_bool_t* value, scpi_bool_t mandatory) {
+    scpi_bool_t      result;
     scpi_parameter_t param;
-    int32_t intval;
+    int32_t          intval;
 
     if (!value) {
         SCPI_ErrorPush(context, SCPI_ERROR_SYSTEM_ERROR);
@@ -1334,8 +1341,8 @@ scpi_bool_t SCPI_ParamBool(scpi_t * context, scpi_bool_t * value, scpi_bool_t ma
  * @param mandatory
  * @return
  */
-scpi_bool_t SCPI_ParamChoice(scpi_t * context, const scpi_choice_def_t * options, int32_t * value, scpi_bool_t mandatory) {
-    scpi_bool_t result;
+scpi_bool_t SCPI_ParamChoice(scpi_t* context, const scpi_choice_def_t* options, int32_t* value, scpi_bool_t mandatory) {
+    scpi_bool_t      result;
     scpi_parameter_t param;
 
     if (!options || !value) {
@@ -1357,32 +1364,37 @@ scpi_bool_t SCPI_ParamChoice(scpi_t * context, const scpi_choice_def_t * options
  * @param token
  * @return
  */
-int scpiParser_parseProgramData(lex_state_t * state, scpi_token_t * token) {
+int scpiParser_parseProgramData(lex_state_t* state, scpi_token_t* token) {
     scpi_token_t tmp;
-    int result = 0;
-    int wsLen;
-    int suffixLen;
-    int realLen = 0;
+    int          result = 0;
+    int          wsLen;
+    int          suffixLen;
+    int          realLen = 0;
     realLen += scpiLex_WhiteSpace(state, &tmp);
 
-    if (result == 0) result = scpiLex_NondecimalNumericData(state, token);
-    if (result == 0) result = scpiLex_CharacterProgramData(state, token);
+    if (result == 0)
+        result = scpiLex_NondecimalNumericData(state, token);
+    if (result == 0)
+        result = scpiLex_CharacterProgramData(state, token);
     if (result == 0) {
         result = scpiLex_DecimalNumericProgramData(state, token);
         if (result != 0) {
-            wsLen = scpiLex_WhiteSpace(state, &tmp);
+            wsLen     = scpiLex_WhiteSpace(state, &tmp);
             suffixLen = scpiLex_SuffixProgramData(state, &tmp);
             if (suffixLen > 0) {
                 token->len += wsLen + suffixLen;
                 token->type = SCPI_TOKEN_DECIMAL_NUMERIC_PROGRAM_DATA_WITH_SUFFIX;
-                result = token->len;
+                result      = token->len;
             }
         }
     }
 
-    if (result == 0) result = scpiLex_StringProgramData(state, token);
-    if (result == 0) result = scpiLex_ArbitraryBlockProgramData(state, token);
-    if (result == 0) result = scpiLex_ProgramExpression(state, token);
+    if (result == 0)
+        result = scpiLex_StringProgramData(state, token);
+    if (result == 0)
+        result = scpiLex_ArbitraryBlockProgramData(state, token);
+    if (result == 0)
+        result = scpiLex_ProgramExpression(state, token);
 
     realLen += scpiLex_WhiteSpace(state, &tmp);
 
@@ -1396,16 +1408,15 @@ int scpiParser_parseProgramData(lex_state_t * state, scpi_token_t * token) {
  * @param numberOfParameters
  * @return
  */
-int scpiParser_parseAllProgramData(lex_state_t * state, scpi_token_t * token, int * numberOfParameters) {
+int scpiParser_parseAllProgramData(lex_state_t* state, scpi_token_t* token, int* numberOfParameters) {
 
-    int result;
+    int          result;
     scpi_token_t tmp;
-    int paramCount = 0;
+    int          paramCount = 0;
 
-    token->len = -1;
+    token->len  = -1;
     token->type = SCPI_TOKEN_ALL_PROGRAM_DATA;
-    token->ptr = state->pos;
-
+    token->ptr  = state->pos;
 
     for (result = 1; result != 0; result = scpiLex_Comma(state, &tmp)) {
         token->len += result;
@@ -1415,8 +1426,8 @@ int scpiParser_parseAllProgramData(lex_state_t * state, scpi_token_t * token, in
             token->len += result;
         } else {
             token->type = SCPI_TOKEN_UNKNOWN;
-            token->len = 0;
-            paramCount = -1;
+            token->len  = 0;
+            paramCount  = -1;
             break;
         }
         paramCount++;
@@ -1435,14 +1446,14 @@ int scpiParser_parseAllProgramData(lex_state_t * state, scpi_token_t * token, in
  * @param len
  * @return
  */
-int scpiParser_detectProgramMessageUnit(scpi_parser_state_t * state, char * buffer, int len) {
-    lex_state_t lex_state;
+int scpiParser_detectProgramMessageUnit(scpi_parser_state_t* state, char* buffer, int len) {
+    lex_state_t  lex_state;
     scpi_token_t tmp;
-    int result = 0;
+    int          result = 0;
 
     lex_state.buffer = lex_state.pos = buffer;
-    lex_state.len = len;
-    state->numberOfParameters = 0;
+    lex_state.len                    = len;
+    state->numberOfParameters        = 0;
 
     /* ignore whitespace at the begginig */
     scpiLex_WhiteSpace(&lex_state, &tmp);
@@ -1458,13 +1469,15 @@ int scpiParser_detectProgramMessageUnit(scpi_parser_state_t * state, char * buff
         invalidateToken(&state->programData, lex_state.buffer);
     }
 
-    if (result == 0) result = scpiLex_NewLine(&lex_state, &tmp);
-    if (result == 0) result = scpiLex_Semicolon(&lex_state, &tmp);
+    if (result == 0)
+        result = scpiLex_NewLine(&lex_state, &tmp);
+    if (result == 0)
+        result = scpiLex_Semicolon(&lex_state, &tmp);
 
     if (!scpiLex_IsEos(&lex_state) && (result == 0)) {
         lex_state.pos++;
 
-        state->programHeader.len = 1;
+        state->programHeader.len  = 1;
         state->programHeader.type = SCPI_TOKEN_INVALID;
 
         invalidateToken(&state->programData, lex_state.buffer);
@@ -1488,8 +1501,8 @@ int scpiParser_detectProgramMessageUnit(scpi_parser_state_t * state, char * buff
  * @param cmd
  * @return
  */
-scpi_bool_t SCPI_IsCmd(scpi_t * context, const char * cmd) {
-    const char * pattern;
+scpi_bool_t SCPI_IsCmd(scpi_t* context, const char* cmd) {
+    const char* pattern;
 
     if (!context->param_list.cmd) {
         return FALSE;
@@ -1506,7 +1519,7 @@ scpi_bool_t SCPI_IsCmd(scpi_t * context, const char * cmd) {
  * @param context
  * @return
  */
-int32_t SCPI_CmdTag(scpi_t * context) {
+int32_t SCPI_CmdTag(scpi_t* context) {
     if (context->param_list.cmd) {
         return context->param_list.cmd->tag;
     } else {
@@ -1515,12 +1528,17 @@ int32_t SCPI_CmdTag(scpi_t * context) {
 }
 #endif /* USE_COMMAND_TAGS */
 
-scpi_bool_t SCPI_Match(const char * pattern, const char * value, size_t len) {
+scpi_bool_t SCPI_Match(const char* pattern, const char* value, size_t len) {
     return matchCommand(pattern, value, len, NULL, 0, 0);
 }
 
-scpi_bool_t SCPI_CommandNumbers(scpi_t * context, int32_t * numbers, size_t len, int32_t default_value) {
-    return matchCommand(context->param_list.cmd->pattern, context->param_list.cmd_raw.data, context->param_list.cmd_raw.length, numbers, len, default_value);
+scpi_bool_t SCPI_CommandNumbers(scpi_t* context, int32_t* numbers, size_t len, int32_t default_value) {
+    return matchCommand(context->param_list.cmd->pattern,
+        context->param_list.cmd_raw.data,
+        context->param_list.cmd_raw.length,
+        numbers,
+        len,
+        default_value);
 }
 
 /**
@@ -1529,7 +1547,7 @@ scpi_bool_t SCPI_CommandNumbers(scpi_t * context, int32_t * numbers, size_t len,
  * @param parameter
  * @return
  */
-scpi_bool_t SCPI_ParamIsValid(scpi_parameter_t * parameter) {
+scpi_bool_t SCPI_ParamIsValid(scpi_parameter_t* parameter) {
     return parameter->type == SCPI_TOKEN_UNKNOWN ? FALSE : TRUE;
 }
 
@@ -1538,9 +1556,7 @@ scpi_bool_t SCPI_ParamIsValid(scpi_parameter_t * parameter) {
  * @param context
  * @return
  */
-scpi_bool_t SCPI_ParamErrorOccurred(scpi_t * context) {
-    return context->cmd_error;
-}
+scpi_bool_t SCPI_ParamErrorOccurred(scpi_t* context) { return context->cmd_error; }
 
 /**
  * Result binary array and swap bytes if needed (native endiannes != required endiannes)
@@ -1551,7 +1567,8 @@ scpi_bool_t SCPI_ParamErrorOccurred(scpi_t * context) {
  * @param format
  * @return
  */
-static size_t produceResultArrayBinary(scpi_t * context, const void * array, size_t count, size_t item_size, scpi_array_format_t format) {
+static size_t produceResultArrayBinary(
+    scpi_t* context, const void* array, size_t count, size_t item_size, scpi_array_format_t format) {
 
     if (SCPI_GetNativeFormat() == format) {
         switch (item_size) {
@@ -1585,19 +1602,19 @@ static size_t produceResultArrayBinary(scpi_t * context, const void * array, siz
                 break;
             case 2:
                 for (i = 0; i < count; i++) {
-                    uint16_t val = SCPI_Swap16(((uint16_t*) array)[i]);
+                    uint16_t val = SCPI_Swap16(((uint16_t*)array)[i]);
                     result += SCPI_ResultArbitraryBlockData(context, &val, item_size);
                 }
                 break;
             case 4:
                 for (i = 0; i < count; i++) {
-                    uint32_t val = SCPI_Swap32(((uint32_t*) array)[i]);
+                    uint32_t val = SCPI_Swap32(((uint32_t*)array)[i]);
                     result += SCPI_ResultArbitraryBlockData(context, &val, item_size);
                 }
                 break;
             case 8:
                 for (i = 0; i < count; i++) {
-                    uint64_t val = SCPI_Swap64(((uint64_t*) array)[i]);
+                    uint64_t val = SCPI_Swap64(((uint64_t*)array)[i]);
                     result += SCPI_ResultArbitraryBlockData(context, &val, item_size);
                 }
                 break;
@@ -1607,19 +1624,19 @@ static size_t produceResultArrayBinary(scpi_t * context, const void * array, siz
     }
 }
 
-
-#define RESULT_ARRAY(func) do {\
-    size_t result = 0;\
-    if (format == SCPI_FORMAT_ASCII) {\
-        size_t i;\
-        for (i = 0; i < count; i++) {\
-            result += func(context, array[i]);\
-        }\
-    } else {\
-        result = produceResultArrayBinary(context, array, count, sizeof(*array), format);\
-    }\
-    return result;\
-} while(0)
+#define RESULT_ARRAY(func)                                                                                             \
+    do {                                                                                                               \
+        size_t result = 0;                                                                                             \
+        if (format == SCPI_FORMAT_ASCII) {                                                                             \
+            size_t i;                                                                                                  \
+            for (i = 0; i < count; i++) {                                                                              \
+                result += func(context, array[i]);                                                                     \
+            }                                                                                                          \
+        } else {                                                                                                       \
+            result = produceResultArrayBinary(context, array, count, sizeof(*array), format);                          \
+        }                                                                                                              \
+        return result;                                                                                                 \
+    } while (0)
 
 /**
  * Result array of signed 8bit integers
@@ -1629,7 +1646,7 @@ static size_t produceResultArrayBinary(scpi_t * context, const void * array, siz
  * @param format
  * @return
  */
-size_t SCPI_ResultArrayInt8(scpi_t * context, const int8_t * array, size_t count, scpi_array_format_t format) {
+size_t SCPI_ResultArrayInt8(scpi_t* context, const int8_t* array, size_t count, scpi_array_format_t format) {
     RESULT_ARRAY(SCPI_ResultInt8);
 }
 
@@ -1641,7 +1658,7 @@ size_t SCPI_ResultArrayInt8(scpi_t * context, const int8_t * array, size_t count
  * @param format
  * @return
  */
-size_t SCPI_ResultArrayUInt8(scpi_t * context, const uint8_t * array, size_t count, scpi_array_format_t format) {
+size_t SCPI_ResultArrayUInt8(scpi_t* context, const uint8_t* array, size_t count, scpi_array_format_t format) {
     RESULT_ARRAY(SCPI_ResultUInt8);
 }
 
@@ -1653,7 +1670,7 @@ size_t SCPI_ResultArrayUInt8(scpi_t * context, const uint8_t * array, size_t cou
  * @param format
  * @return
  */
-size_t SCPI_ResultArrayInt16(scpi_t * context, const int16_t * array, size_t count, scpi_array_format_t format) {
+size_t SCPI_ResultArrayInt16(scpi_t* context, const int16_t* array, size_t count, scpi_array_format_t format) {
     RESULT_ARRAY(SCPI_ResultInt16);
 }
 
@@ -1665,7 +1682,7 @@ size_t SCPI_ResultArrayInt16(scpi_t * context, const int16_t * array, size_t cou
  * @param format
  * @return
  */
-size_t SCPI_ResultArrayUInt16(scpi_t * context, const uint16_t * array, size_t count, scpi_array_format_t format) {
+size_t SCPI_ResultArrayUInt16(scpi_t* context, const uint16_t* array, size_t count, scpi_array_format_t format) {
     RESULT_ARRAY(SCPI_ResultUInt16);
 }
 
@@ -1677,7 +1694,7 @@ size_t SCPI_ResultArrayUInt16(scpi_t * context, const uint16_t * array, size_t c
  * @param format
  * @return
  */
-size_t SCPI_ResultArrayInt32(scpi_t * context, const int32_t * array, size_t count, scpi_array_format_t format) {
+size_t SCPI_ResultArrayInt32(scpi_t* context, const int32_t* array, size_t count, scpi_array_format_t format) {
     RESULT_ARRAY(SCPI_ResultInt32);
 }
 
@@ -1689,7 +1706,7 @@ size_t SCPI_ResultArrayInt32(scpi_t * context, const int32_t * array, size_t cou
  * @param format
  * @return
  */
-size_t SCPI_ResultArrayUInt32(scpi_t * context, const uint32_t * array, size_t count, scpi_array_format_t format) {
+size_t SCPI_ResultArrayUInt32(scpi_t* context, const uint32_t* array, size_t count, scpi_array_format_t format) {
     RESULT_ARRAY(SCPI_ResultUInt32);
 }
 
@@ -1701,7 +1718,7 @@ size_t SCPI_ResultArrayUInt32(scpi_t * context, const uint32_t * array, size_t c
  * @param format
  * @return
  */
-size_t SCPI_ResultArrayInt64(scpi_t * context, const int64_t * array, size_t count, scpi_array_format_t format) {
+size_t SCPI_ResultArrayInt64(scpi_t* context, const int64_t* array, size_t count, scpi_array_format_t format) {
     RESULT_ARRAY(SCPI_ResultInt64);
 }
 
@@ -1713,7 +1730,7 @@ size_t SCPI_ResultArrayInt64(scpi_t * context, const int64_t * array, size_t cou
  * @param format
  * @return
  */
-size_t SCPI_ResultArrayUInt64(scpi_t * context, const uint64_t * array, size_t count, scpi_array_format_t format) {
+size_t SCPI_ResultArrayUInt64(scpi_t* context, const uint64_t* array, size_t count, scpi_array_format_t format) {
     RESULT_ARRAY(SCPI_ResultUInt64);
 }
 
@@ -1725,7 +1742,7 @@ size_t SCPI_ResultArrayUInt64(scpi_t * context, const uint64_t * array, size_t c
  * @param format
  * @return
  */
-size_t SCPI_ResultArrayFloat(scpi_t * context, const float * array, size_t count, scpi_array_format_t format) {
+size_t SCPI_ResultArrayFloat(scpi_t* context, const float* array, size_t count, scpi_array_format_t format) {
     RESULT_ARRAY(SCPI_ResultFloat);
 }
 
@@ -1737,23 +1754,25 @@ size_t SCPI_ResultArrayFloat(scpi_t * context, const float * array, size_t count
  * @param format
  * @return
  */
-size_t SCPI_ResultArrayDouble(scpi_t * context, const double * array, size_t count, scpi_array_format_t format) {
+size_t SCPI_ResultArrayDouble(scpi_t* context, const double* array, size_t count, scpi_array_format_t format) {
     RESULT_ARRAY(SCPI_ResultDouble);
 }
 
 /*
  * Template macro to generate all SCPI_ParamArrayXYZ function
  */
-#define PARAM_ARRAY_TEMPLATE(func) do{\
-    if (format != SCPI_FORMAT_ASCII) return FALSE;\
-    for (*o_count = 0; *o_count < i_count; (*o_count)++) {\
-        if (!func(context, &data[*o_count], mandatory)) {\
-            break;\
-        }\
-        mandatory = FALSE;\
-    }\
-    return mandatory ? FALSE : TRUE;\
-}while(0)
+#define PARAM_ARRAY_TEMPLATE(func)                                                                                     \
+    do {                                                                                                               \
+        if (format != SCPI_FORMAT_ASCII)                                                                               \
+            return FALSE;                                                                                              \
+        for (*o_count = 0; *o_count < i_count; (*o_count)++) {                                                         \
+            if (!func(context, &data[*o_count], mandatory)) {                                                          \
+                break;                                                                                                 \
+            }                                                                                                          \
+            mandatory = FALSE;                                                                                         \
+        }                                                                                                              \
+        return mandatory ? FALSE : TRUE;                                                                               \
+    } while (0)
 
 /**
  * Read list of values up to i_count
@@ -1764,7 +1783,12 @@ size_t SCPI_ResultArrayDouble(scpi_t * context, const double * array, size_t cou
  * @param mandatory
  * @return TRUE on success
  */
-scpi_bool_t SCPI_ParamArrayInt32(scpi_t * context, int32_t *data, size_t i_count, size_t *o_count, scpi_array_format_t format, scpi_bool_t mandatory) {
+scpi_bool_t SCPI_ParamArrayInt32(scpi_t* context,
+    int32_t*                             data,
+    size_t                               i_count,
+    size_t*                              o_count,
+    scpi_array_format_t                  format,
+    scpi_bool_t                          mandatory) {
     PARAM_ARRAY_TEMPLATE(SCPI_ParamInt32);
 }
 
@@ -1777,7 +1801,12 @@ scpi_bool_t SCPI_ParamArrayInt32(scpi_t * context, int32_t *data, size_t i_count
  * @param mandatory
  * @return TRUE on success
  */
-scpi_bool_t SCPI_ParamArrayUInt32(scpi_t * context, uint32_t *data, size_t i_count, size_t *o_count, scpi_array_format_t format, scpi_bool_t mandatory) {
+scpi_bool_t SCPI_ParamArrayUInt32(scpi_t* context,
+    uint32_t*                             data,
+    size_t                                i_count,
+    size_t*                               o_count,
+    scpi_array_format_t                   format,
+    scpi_bool_t                           mandatory) {
     PARAM_ARRAY_TEMPLATE(SCPI_ParamUInt32);
 }
 
@@ -1790,7 +1819,12 @@ scpi_bool_t SCPI_ParamArrayUInt32(scpi_t * context, uint32_t *data, size_t i_cou
  * @param mandatory
  * @return TRUE on success
  */
-scpi_bool_t SCPI_ParamArrayInt64(scpi_t * context, int64_t *data, size_t i_count, size_t *o_count, scpi_array_format_t format, scpi_bool_t mandatory) {
+scpi_bool_t SCPI_ParamArrayInt64(scpi_t* context,
+    int64_t*                             data,
+    size_t                               i_count,
+    size_t*                              o_count,
+    scpi_array_format_t                  format,
+    scpi_bool_t                          mandatory) {
     PARAM_ARRAY_TEMPLATE(SCPI_ParamInt64);
 }
 
@@ -1803,7 +1837,12 @@ scpi_bool_t SCPI_ParamArrayInt64(scpi_t * context, int64_t *data, size_t i_count
  * @param mandatory
  * @return TRUE on success
  */
-scpi_bool_t SCPI_ParamArrayUInt64(scpi_t * context, uint64_t *data, size_t i_count, size_t *o_count, scpi_array_format_t format, scpi_bool_t mandatory) {
+scpi_bool_t SCPI_ParamArrayUInt64(scpi_t* context,
+    uint64_t*                             data,
+    size_t                                i_count,
+    size_t*                               o_count,
+    scpi_array_format_t                   format,
+    scpi_bool_t                           mandatory) {
     PARAM_ARRAY_TEMPLATE(SCPI_ParamUInt64);
 }
 
@@ -1816,7 +1855,8 @@ scpi_bool_t SCPI_ParamArrayUInt64(scpi_t * context, uint64_t *data, size_t i_cou
  * @param mandatory
  * @return TRUE on success
  */
-scpi_bool_t SCPI_ParamArrayFloat(scpi_t * context, float *data, size_t i_count, size_t *o_count, scpi_array_format_t format, scpi_bool_t mandatory) {
+scpi_bool_t SCPI_ParamArrayFloat(
+    scpi_t* context, float* data, size_t i_count, size_t* o_count, scpi_array_format_t format, scpi_bool_t mandatory) {
     PARAM_ARRAY_TEMPLATE(SCPI_ParamFloat);
 }
 
@@ -1829,6 +1869,7 @@ scpi_bool_t SCPI_ParamArrayFloat(scpi_t * context, float *data, size_t i_count, 
  * @param mandatory
  * @return TRUE on success
  */
-scpi_bool_t SCPI_ParamArrayDouble(scpi_t * context, double *data, size_t i_count, size_t *o_count, scpi_array_format_t format, scpi_bool_t mandatory) {
+scpi_bool_t SCPI_ParamArrayDouble(
+    scpi_t* context, double* data, size_t i_count, size_t* o_count, scpi_array_format_t format, scpi_bool_t mandatory) {
     PARAM_ARRAY_TEMPLATE(SCPI_ParamDouble);
 }

@@ -38,7 +38,7 @@
 #ifndef __SCPI_CONFIG_H_
 #define __SCPI_CONFIG_H_
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -49,12 +49,12 @@ extern "C" {
 #endif
 
 /* set the termination character(s)   */
-#define LINE_ENDING_CR          "\r"    /*   use a <CR> carriage return as termination charcter */
-#define LINE_ENDING_LF          "\n"    /*   use a <LF> line feed as termination charcter */
-#define LINE_ENDING_CRLF        "\r\n"  /*   use <CR><LF> carriage return + line feed as termination charcters */
+#define LINE_ENDING_CR "\r"     /*   use a <CR> carriage return as termination charcter */
+#define LINE_ENDING_LF "\n"     /*   use a <LF> line feed as termination charcter */
+#define LINE_ENDING_CRLF "\r\n" /*   use <CR><LF> carriage return + line feed as termination charcters */
 
 #ifndef SCPI_LINE_ENDING
-#define SCPI_LINE_ENDING        LINE_ENDING_CRLF
+#define SCPI_LINE_ENDING LINE_ENDING_CRLF
 #endif
 
 #ifndef USE_CUSTOM_REGISTERS
@@ -68,7 +68,8 @@ extern "C" {
 #define SYSTEM_BARE_METAL 0
 #define SYSTEM_FULL_BLOWN 1
 
-/* This should cover all windows compilers (msvc, mingw, cvi) and all Linux/OSX/BSD and other UNIX compatible systems (gcc, clang) */
+/* This should cover all windows compilers (msvc, mingw, cvi) and all Linux/OSX/BSD and other UNIX compatible systems
+ * (gcc, clang) */
 #if defined(_WIN32) || defined(_WIN64) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
 #define SYSTEM_TYPE SYSTEM_FULL_BLOWN
 #else
@@ -111,11 +112,11 @@ extern "C" {
 #endif
 
 #ifndef USE_COMMAND_TAGS
-#define USE_COMMAND_TAGS 1
+#define USE_COMMAND_TAGS 0
 #endif
 
 #ifndef USE_DEPRECATED_FUNCTIONS
-#define USE_DEPRECATED_FUNCTIONS 1
+#define USE_DEPRECATED_FUNCTIONS 0
 #endif
 
 #ifndef USE_CUSTOM_DTOSTRE
@@ -163,15 +164,15 @@ extern "C" {
 #endif
 
 #ifndef USE_UNITS_POWER
-#define USE_UNITS_POWER 1
+#define USE_UNITS_POWER 0
 #endif
 
 #ifndef USE_UNITS_FREQUENCY
-#define USE_UNITS_FREQUENCY 1
+#define USE_UNITS_FREQUENCY 0
 #endif
 
 #ifndef USE_UNITS_ELECTRIC
-#define USE_UNITS_ELECTRIC 1
+#define USE_UNITS_ELECTRIC 0
 #endif
 
 #ifndef USE_UNITS_ELECTRIC_CHARGE_CONDUCTANCE
@@ -180,9 +181,9 @@ extern "C" {
 
 /* define local macros depending on existance of strnlen */
 #if HAVE_STRNLEN
-#define SCPIDEFINE_strnlen(s, l)	strnlen((s), (l))
+#define SCPIDEFINE_strnlen(s, l) strnlen((s), (l))
 #else
-#define SCPIDEFINE_strnlen(s, l)	BSD_strnlen((s), (l))
+#define SCPIDEFINE_strnlen(s, l) BSD_strnlen((s), (l))
 #endif
 
 /* define local macros depending on existance of strncasecmp and strnicmp */
@@ -195,11 +196,14 @@ extern "C" {
 #endif
 
 #if HAVE_DTOSTRE
-#define SCPIDEFINE_floatToStr(v, s, l) dtostre((double)(v), (s), 6, DTOSTR_PLUS_SIGN | DTOSTR_ALWAYS_SIGN | DTOSTR_UPPERCASE)
+#define SCPIDEFINE_floatToStr(v, s, l)                                                                                 \
+    dtostre((double)(v), (s), 6, DTOSTR_PLUS_SIGN | DTOSTR_ALWAYS_SIGN | DTOSTR_UPPERCASE)
 #elif USE_CUSTOM_DTOSTRE
 #define SCPIDEFINE_floatToStr(v, s, l) SCPI_dtostre((v), (s), (l), 6, 0)
 #elif HAVE_SNPRINTF
+#ifndef SCPIDEFINE_floatToStr
 #define SCPIDEFINE_floatToStr(v, s, l) snprintf((s), (l), "%g", (v))
+#endif
 #else
 #define SCPIDEFINE_floatToStr(v, s, l) SCPI_dtostre((v), (s), (l), 6, 0)
 #endif
@@ -216,75 +220,75 @@ extern "C" {
 
 #if USE_DEVICE_DEPENDENT_ERROR_INFORMATION
 
-  #if USE_MEMORY_ALLOCATION_FREE
-    #include <stdlib.h>
-    #include <string.h>
-    #define SCPIDEFINE_DESCRIPTION_MAX_PARTS            2
-    #if HAVE_STRNDUP
-      #define SCPIDEFINE_strndup(h, s, l)               strndup((s), (l))
-    #else
-      #define SCPIDEFINE_strndup(h, s, l)               OUR_strndup((s), (l))
-    #endif
-    #define SCPIDEFINE_free(h, s, r)                    free((s))
-  #else
-    #define SCPIDEFINE_DESCRIPTION_MAX_PARTS            3
-    #define SCPIDEFINE_strndup(h, s, l)                 scpiheap_strndup((h), (s), (l))
-    #define SCPIDEFINE_free(h, s, r)                    scpiheap_free((h), (s), (r))
-    #define SCPIDEFINE_get_parts(h, s, l1, s2, l2)      scpiheap_get_parts((h), (s), (l1), (s2), (l2))
-  #endif
+#if USE_MEMORY_ALLOCATION_FREE
+#include <stdlib.h>
+#include <string.h>
+#define SCPIDEFINE_DESCRIPTION_MAX_PARTS 2
+#if HAVE_STRNDUP
+#define SCPIDEFINE_strndup(h, s, l) strndup((s), (l))
 #else
-  #define SCPIDEFINE_DESCRIPTION_MAX_PARTS              1
-  #define SCPIDEFINE_strndup(h, s, l)                   NULL
-  #define SCPIDEFINE_free(h, s, r)
+#define SCPIDEFINE_strndup(h, s, l) OUR_strndup((s), (l))
+#endif
+#define SCPIDEFINE_free(h, s, r) free((s))
+#else
+#define SCPIDEFINE_DESCRIPTION_MAX_PARTS 3
+#define SCPIDEFINE_strndup(h, s, l) scpiheap_strndup((h), (s), (l))
+#define SCPIDEFINE_free(h, s, r) scpiheap_free((h), (s), (r))
+#define SCPIDEFINE_get_parts(h, s, l1, s2, l2) scpiheap_get_parts((h), (s), (l1), (s2), (l2))
+#endif
+#else
+#define SCPIDEFINE_DESCRIPTION_MAX_PARTS 1
+#define SCPIDEFINE_strndup(h, s, l) NULL
+#define SCPIDEFINE_free(h, s, r)
 #endif
 
 #if HAVE_SIGNBIT
-  #define SCPIDEFINE_signbit(n)                         signbit(n)
+#define SCPIDEFINE_signbit(n) signbit(n)
 #else
-  #define SCPIDEFINE_signbit(n)                         ((n)<0)
+#define SCPIDEFINE_signbit(n) ((n) < 0)
 #endif
 
 #if HAVE_FINITE
-  #define SCPIDEFINE_isfinite(n)                        finite(n)
+#define SCPIDEFINE_isfinite(n) finite(n)
 #elif HAVE_ISFINITE
-  #define SCPIDEFINE_isfinite(n)                        isfinite(n)
+#define SCPIDEFINE_isfinite(n) isfinite(n)
 #else
-  #define SCPIDEFINE_isfinite(n)                        (!SCPIDEFINE_isnan((n)) && ((n) < INFINITY) && ((n) > -INFINITY))
+#define SCPIDEFINE_isfinite(n) (!SCPIDEFINE_isnan((n)) && ((n) < INFINITY) && ((n) > -INFINITY))
 #endif
 
 #if HAVE_STRTOF
-  #define SCPIDEFINE_strtof(n, p)                       strtof((n), (p))
+#define SCPIDEFINE_strtof(n, p) strtof((n), (p))
 #else
-  #define SCPIDEFINE_strtof(n, p)                       strtod((n), (p))
+#define SCPIDEFINE_strtof(n, p) strtod((n), (p))
 #endif
 
 #if HAVE_STRTOLL
-  #define SCPIDEFINE_strtoll(n, p, b)                   strtoll((n), (p), (b))
-  #define SCPIDEFINE_strtoull(n, p, b)                  strtoull((n), (p), (b))
+#define SCPIDEFINE_strtoll(n, p, b) strtoll((n), (p), (b))
+#define SCPIDEFINE_strtoull(n, p, b) strtoull((n), (p), (b))
 #else
-  #define SCPIDEFINE_strtoll(n, p, b)                   strtoll((n), (p), (b))
-  #define SCPIDEFINE_strtoull(n, p, b)                  strtoull((n), (p), (b))
-  extern long long int strtoll(const char *nptr, char **endptr, int base);
-  extern unsigned long long int strtoull(const char *nptr, char **endptr, int base);
-  /* TODO: implement OUR_strtoll and OUR_strtoull */
-  /* #warning "64bit string to int conversion not implemented" */
+#define SCPIDEFINE_strtoll(n, p, b) strtoll((n), (p), (b))
+#define SCPIDEFINE_strtoull(n, p, b) strtoull((n), (p), (b))
+extern long long int          strtoll(const char* nptr, char** endptr, int base);
+extern unsigned long long int strtoull(const char* nptr, char** endptr, int base);
+/* TODO: implement OUR_strtoll and OUR_strtoull */
+/* #warning "64bit string to int conversion not implemented" */
 #endif
 
 #if HAVE_ISNAN
-  #define SCPIDEFINE_isnan(n)                           isnan((n))
+#define SCPIDEFINE_isnan(n) isnan((n))
 #else
-  #define SCPIDEFINE_isnan(n)                           ((n) != (n))
+#define SCPIDEFINE_isnan(n) ((n) != (n))
 #endif
 
 #ifndef NAN
-  #define NAN                                           (0.0 / 0.0)
+#define NAN (0.0 / 0.0)
 #endif
 
 #ifndef INFINITY
-  #define INFINITY                                      (1.0 / 0.0)
+#define INFINITY (1.0 / 0.0)
 #endif
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 
